@@ -1,0 +1,35 @@
+.form--container {
+  padding: 1rem 7%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+.signup-image {
+  width: 420px;
+  border-radius: 20px;
+}
+.form--container .row {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+}
+.form {
+  max-width: 400px;
+  /* margin: 0 auto; */
+}
+.form .form-meta {
+  margin: 10px 0;
+}
+.form input {
+  width: 400px;
+  padding: 8px;
+}
+
+.form p {
+  margin-bottom: 10px;
+  color: gray;
+}
+.form p span:hover {
+  color: black;
+  text-decoration: underline;
+}

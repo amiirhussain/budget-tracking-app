@@ -1,0 +1,14 @@
+.menu-bar {
+  padding: 0 9%;
+}
+.logo-container {
+  padding: 10px;
+}
+.logo-container .logo-icon {
+  width: 30px;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+.logo-container span {
+  font-weight: 500;
+}

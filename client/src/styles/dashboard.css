@@ -1,0 +1,19 @@
+.dashboard-card {
+  padding: 2rem 10%;
+}
+.filter-btn {
+  background: #fcc315 !important;
+  color: #000;
+}
+.addEntry-btn {
+  background: #000 !important;
+  color: #fff;
+}
+
+.action-button-container {
+  width: 150px;
+  padding: 8px;
+}
+.dashboard-card .row {
+  margin-bottom: 16px;
+}
