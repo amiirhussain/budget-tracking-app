@@ -10,10 +10,12 @@ import {
   Dropdown,
   Row,
   Card,
+  MenuProps,
 } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 import '../styles/dashboard.css';
+import CustomDatePicker from '../components/CustomDataPicker';
 
 interface BudgetEntry {
   key: string;
@@ -67,14 +69,16 @@ const Dashboard: React.FC = () => {
       key: 'action',
       render: (text: string, record: BudgetEntry) => (
         <Dropdown
-          overlay={menu}
+          placement="bottomLeft"
+          arrow
+          menu={{ items }}
           trigger={['click']}
-          visible={dropdownVisible === record.key} // Show the dropdown for this row's key
-          onVisibleChange={(visible) =>
+          open={dropdownVisible === record.key} // Show the dropdown for this row's key
+          onOpenChange={(visible) =>
             handleDropdownVisibleChange(visible, record.key)
           }
         >
-          <Button style={{ textAlign: 'center' }}>
+          <Button>
             <img
               src={require('../assets/three-dots-menu.png')}
               alt="Menu"
@@ -82,6 +86,35 @@ const Dashboard: React.FC = () => {
             />
           </Button>
         </Dropdown>
+      ),
+    },
+  ];
+
+  const items: MenuProps['items'] = [
+    {
+      key: '1',
+      label: (
+        <Button
+          className="action-btn"
+          icon={<EditOutlined />}
+          block
+          onClick={handleUpdate}
+        >
+          Edit
+        </Button>
+      ),
+    },
+    {
+      key: '2',
+      label: (
+        <Button
+          className="action-btn"
+          icon={<DeleteOutlined />}
+          block
+          onClick={handleDelete}
+        >
+          Delete
+        </Button>
       ),
     },
   ];
@@ -125,23 +158,12 @@ const Dashboard: React.FC = () => {
     },
   ];
 
-  const menu = (
-    <div className="action-button-container">
-      <Button icon={<EditOutlined />} block onClick={handleUpdate}>
-        Edit
-      </Button>
-      <Button icon={<DeleteOutlined />} block onClick={handleDelete}>
-        Delete
-      </Button>
-    </div>
-  );
-
   return (
     <div className="dashboard-card">
       <Card>
         <Row justify="space-between" align="middle" className="row">
           <Space>
-            <DatePicker size="large" placeholder="Select Date" />
+            <CustomDatePicker />
             <Button size="large" type="primary" className="filter-btn" danger>
               Filter by Date
             </Button>
@@ -159,7 +181,7 @@ const Dashboard: React.FC = () => {
 
         <Modal
           title="Add Budget"
-          visible={isModalVisible}
+          open={isModalVisible}
           onCancel={handleCancel}
           footer={[
             <Button key="submit" type="primary" className="addEntry-btn" block>
@@ -169,13 +191,13 @@ const Dashboard: React.FC = () => {
         >
           <Form>
             <Form.Item>
+              <CustomDatePicker />
+            </Form.Item>
+            <Form.Item>
               <Input placeholder="Name" size="large" />
             </Form.Item>
             <Form.Item>
               <Input type="number" placeholder="Price" size="large" />
-            </Form.Item>
-            <Form.Item>
-              <DatePicker size="large" style={{ width: '100%' }} />
             </Form.Item>
           </Form>
         </Modal>

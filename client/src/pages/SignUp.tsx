@@ -1,62 +1,23 @@
-import React from 'react';
-import { Form, Input, Button, Card, Row, Col, notification } from 'antd';
+import React, { useState } from 'react';
+import { Form, Input, Card, Row, Col } from 'antd';
 import Meta from 'antd/es/card/Meta';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../styles/auth.css';
-import { useFormContext } from '../contexts/FormContext';
+import EmailInput from '../components/EmailInput';
+import PasswordInput from '../components/PasswordInput';
+import CustomButton from '../components/CustomButton';
+import { registerUser } from '../utils/UserAuth';
+import { FormData } from '../types/User';
 
 const SignUp: React.FC = () => {
-  const { formData, setFormData } = useFormContext();
-  const navigate = useNavigate();
-
-  const registerUser = async (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
-    event.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      notification.error({
-        message: 'Password Mismatch',
-        description: 'The passwords you entered do not match.',
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:1337/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData), // Use formData from context
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        notification.success({
-          message: 'Signup Success',
-          description: 'Your account has been successfully created!',
-        });
-
-        // Redirect to the login page after a delay
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000); // Delay in milliseconds
-      } else {
-        notification.error({
-          message: 'Signup Failed',
-          description: 'Something Went Wrong!',
-        });
-      }
-    } catch (error) {
-      console.error('Error registering user:', error);
-      notification.error({
-        message: 'Error',
-        description: 'An error occurred while registering.',
-      });
-    }
-  };
+  const [formData, setFormData] = useState<FormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    budget: 0,
+  });
 
   return (
     <div className="form--container">
@@ -72,15 +33,15 @@ const SignUp: React.FC = () => {
           <Col>
             <Form
               name="unique_form"
-              onFinish={registerUser}
+              // onFinish={() => registerUser(formData)}
               layout="vertical"
               className="form"
             >
               <Meta title={'Sign Up'} className="form-meta" />
               <p>
-                Already have an account?{' '}
+                Already have an account?
                 <span style={{ cursor: 'pointer' }}>
-                  <Link to="/login">Login</Link>
+                  <Link to="/login"> Login</Link>
                 </span>
               </p>
               <Form.Item
@@ -112,36 +73,25 @@ const SignUp: React.FC = () => {
                   }
                 />
               </Form.Item>
-              <Form.Item
-                name="email"
+              <EmailInput
+                value={formData.email}
+                onChange={(value) => setFormData({ ...formData, email: value })}
+                placeholder="Email *"
                 rules={[
                   { required: true, message: 'Please enter your email' },
                   { type: 'email', message: 'Please enter a valid email' },
                 ]}
-              >
-                <Input
-                  placeholder="Email *"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                name="password"
+              />
+              <PasswordInput
+                value={formData.password}
+                onChange={(value) =>
+                  setFormData({ ...formData, password: value })
+                }
+                placeholder="Password"
                 rules={[
                   { required: true, message: 'Please enter your password' },
                 ]}
-              >
-                <Input.Password
-                  className="pswrd-input"
-                  placeholder="Password *"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </Form.Item>
+              />
               <Form.Item
                 name="confirmPassword"
                 rules={[
@@ -187,16 +137,13 @@ const SignUp: React.FC = () => {
                   }
                 />
               </Form.Item>
-
               <Form.Item>
-                <Button
-                  onClick={registerUser}
-                  style={{ background: '#FCC315', color: '#fff' }}
-                  htmlType="submit"
-                  block
-                >
-                  Submit
-                </Button>
+                <CustomButton
+                  onclick={() => {
+                    registerUser(formData);
+                  }}
+                  buttonText="Sign Up"
+                />
               </Form.Item>
             </Form>
           </Col>

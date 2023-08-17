@@ -49,11 +49,7 @@ const Navbar: React.FC = () => {
         <span className="logo-text">Budget Tracker</span>
       </Menu.Item>
 
-      <SubMenu
-        key="settings"
-        icon={<UserOutlined />}
-        style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}
-      >
+      <SubMenu key="settings" icon={<UserOutlined />} className="sub-menu">
         {location.pathname === '/' || location.pathname === '/login' ? (
           <>
             <Menu.Item key="login" icon={<UserOutlined />}>
@@ -65,9 +61,6 @@ const Navbar: React.FC = () => {
           </>
         ) : (
           <>
-            {/* <Menu.Item key="profile" icon={<UserOutlined />}>
-              <Link to="/">Profile</Link>
-            </Menu.Item> */}
             <Menu.Item key="logout" icon={<LogoutOutlined />}>
               <Link to="" onClick={handleLogout}>
                 Logout

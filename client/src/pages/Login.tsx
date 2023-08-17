@@ -1,50 +1,17 @@
 import React from 'react';
-import { Card, Row, Col, Button, Form, Input, notification } from 'antd';
+import { Card, Row, Col, Form, notification } from 'antd';
 import '../styles/auth.css';
 import Meta from 'antd/es/card/Meta';
 import { Link } from 'react-router-dom';
 import { useFormContext } from '../contexts/FormContext';
+import EmailInput from '../components/EmailInput';
+import PasswordInput from '../components/PasswordInput';
+import CustomButton from '../components/CustomButton';
+import { FormData } from '../types/User';
+import { loginUser } from '../utils/UserAuth';
 
 const Login: React.FC = () => {
   const { formData, setFormData } = useFormContext();
-
-  async function loginUser(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) {
-    event.preventDefault();
-
-    try {
-      const response = await fetch('http://localhost:1337/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-      console.log(data);
-
-      if (data.user) {
-        localStorage.setItem('token', data.user);
-        notification.success({
-          message: 'Login Success',
-          description: 'You have successfully logged in!',
-        });
-        window.location.href = '/dashboard';
-      } else {
-        notification.error({
-          message: 'Login Failed',
-          description: 'Please check your email and password',
-        });
-      }
-    } catch (error) {
-      console.error('Error during fetch:', error);
-    }
-  }
 
   return (
     <div className="form--container">
@@ -60,57 +27,46 @@ const Login: React.FC = () => {
           <Col>
             <Form
               name="unique_form"
-              onFinish={loginUser}
+              // onFinish={loginUser}
               layout="vertical"
               className="form"
             >
               <Meta title={'Log In'} className="form-meta" />
               <p>
-                Don't have an account?{' '}
+                Don't have an account?
                 <span style={{ cursor: 'pointer' }}>
-                  <Link to="/">Sign Up</Link>
+                  <Link to="/"> Sign Up</Link>
                 </span>
               </p>
-              <Form.Item
-                name="email"
+
+              <EmailInput
+                value={formData.email}
+                placeholder="Email *"
+                onChange={(value) => setFormData({ ...formData, email: value })}
                 rules={[
                   { required: true, message: 'Please enter your email' },
                   { type: 'email', message: 'Please enter a valid email' },
                 ]}
-              >
-                <Input
-                  placeholder="Email *"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                name="password"
+              />
+
+              <PasswordInput
+                value={formData.password}
+                placeholder="Password *"
+                onChange={(value) =>
+                  setFormData({ ...formData, password: value })
+                }
                 rules={[
                   { required: true, message: 'Please enter your password' },
                 ]}
-              >
-                <Input.Password
-                  className="pswrd-input"
-                  placeholder="Password *"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </Form.Item>
+              />
 
               <Form.Item>
-                <Button
-                  onClick={loginUser}
-                  style={{ background: '#FCC315', color: '#fff' }}
-                  htmlType="submit"
-                  block
-                >
-                  Submit
-                </Button>
+                <CustomButton
+                  onclick={() => {
+                    loginUser(formData);
+                  }}
+                  buttonText="Login"
+                />
               </Form.Item>
             </Form>
           </Col>

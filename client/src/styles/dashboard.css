@@ -17,3 +17,11 @@
 .dashboard-card .row {
   margin-bottom: 16px;
 }
+
+.action-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}

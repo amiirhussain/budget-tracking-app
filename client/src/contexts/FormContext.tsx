@@ -1,18 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  budget: number | undefined;
-  password: string;
-  confirmPassword: string;
-}
-
-interface FormContextType {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-}
+import { FormData, FormContextType } from '../types/User';
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 

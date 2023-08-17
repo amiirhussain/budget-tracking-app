@@ -12,3 +12,8 @@
 .logo-container span {
   font-weight: 500;
 }
+.sub-menu {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto;
+}
