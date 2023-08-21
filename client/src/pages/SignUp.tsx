@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Form, Input, Card, Row, Col } from 'antd';
 import Meta from 'antd/es/card/Meta';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import PasswordInput from '../components/PasswordInput';
 import CustomButton from '../components/CustomButton';
 import { registerUser } from '../utils/UserAuth';
 import { FormData } from '../types/User';
+import { FormInstance } from 'antd/lib/form';
 
 const SignUp: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -18,6 +19,8 @@ const SignUp: React.FC = () => {
     confirmPassword: '',
     budget: 0,
   });
+
+  const formRef = useRef<FormInstance>(null);
 
   return (
     <div className="form--container">
@@ -30,12 +33,12 @@ const SignUp: React.FC = () => {
               alt="Signup"
             />
           </Col>
-          <Col>
+          <Col className="form">
             <Form
+              ref={formRef}
               name="unique_form"
               // onFinish={() => registerUser(formData)}
               layout="vertical"
-              className="form"
             >
               <Meta title={'Sign Up'} className="form-meta" />
               <p>
@@ -140,7 +143,7 @@ const SignUp: React.FC = () => {
               <Form.Item>
                 <CustomButton
                   onclick={() => {
-                    registerUser(formData);
+                    registerUser(formData, formRef);
                   }}
                   buttonText="Sign Up"
                 />

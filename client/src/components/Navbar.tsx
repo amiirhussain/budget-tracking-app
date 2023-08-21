@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles/navbar.css';
+import { useNavigate } from 'react-router-dom';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { MenuClickEventHandler } from 'rc-menu/lib/interface';
 
@@ -10,27 +11,19 @@ const { SubMenu } = Menu;
 const Navbar: React.FC = () => {
   const [currentMenu, setCurrentMenu] = useState<string>('home');
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleMenuClick: MenuClickEventHandler = (e) => {
     setCurrentMenu(e.key);
   };
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('http://localhost:1337/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.status === 200) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-    } catch (error) {
-      console.log('Somthing went wrong!');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove the token from local storage
+    navigate('/login', { replace: true });
+  };
+  const handleProfile = () => {
+    // localStorage.removeItem('token'); // Remove the token from local storage
+    navigate('/profile', { replace: true });
   };
 
   return (
@@ -64,6 +57,14 @@ const Navbar: React.FC = () => {
             <Menu.Item key="logout" icon={<LogoutOutlined />}>
               <Link to="" onClick={handleLogout}>
                 Logout
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="dashboard" icon={<LogoutOutlined />}>
+              <Link to="/dashboard">Dashboard</Link>
+            </Menu.Item>
+            <Menu.Item key="report" icon={<UserOutlined />}>
+              <Link to="/report" onClick={handleProfile}>
+                Report
               </Link>
             </Menu.Item>
           </>

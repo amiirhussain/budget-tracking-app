@@ -15,6 +15,7 @@ const PasswordInput: FC<PasswordInputProps> = ({
           className="pswrd-input"
           placeholder={placeholder}
           value={value}
+          size="large"
           onChange={(e) => onChange(e.target.value)}
         />
       </Form.Item>

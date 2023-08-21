@@ -1,5 +1,6 @@
 import { notification } from 'antd';
 import { FormData } from '../types/User';
+import { FormInstance } from 'antd/lib/form';
 
 export const loginUser = async (formData: FormData) => {
   try {
@@ -35,7 +36,23 @@ export const loginUser = async (formData: FormData) => {
   }
 };
 
-export const registerUser = async (formData: FormData) => {
+export const registerUser = async (
+  formData: FormData,
+  formRef: React.RefObject<FormInstance>,
+) => {
+  if (
+    formData.firstName === '' ||
+    formData.lastName === '' ||
+    formData.email === '' ||
+    formData.password === '' ||
+    formData.budget === 0
+  ) {
+    notification.error({
+      message: 'Invalid Input',
+      description: 'please do not send inavlid input',
+    });
+    return;
+  }
   if (formData.password !== formData.confirmPassword) {
     notification.error({
       message: 'Password Mismatch',
@@ -53,11 +70,14 @@ export const registerUser = async (formData: FormData) => {
       body: JSON.stringify(formData),
     });
 
+    // console.log(formData);
+    // console.log(response);
     if (response.ok) {
       notification.success({
         message: 'Signup Success',
         description: 'Your account has been successfully created!',
       });
+      formRef.current?.resetFields();
     } else {
       notification.error({
         message: 'Signup Failed',

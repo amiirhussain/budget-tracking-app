@@ -1,51 +1,244 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+// import jwtDecode from 'jwt-decode';
+import '../styles/dashboard.css';
+import { useNavigate } from 'react-router';
 import {
   Button,
-  DatePicker,
   Space,
   Modal,
   Form,
   Input,
   Table,
-  Dropdown,
   Row,
   Card,
-  MenuProps,
+  DatePicker,
+  notification,
 } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-
-import '../styles/dashboard.css';
-import CustomDatePicker from '../components/CustomDataPicker';
-
-interface BudgetEntry {
-  key: string;
-  name: string;
-  price: string;
-  date: string;
-}
+import dayjs from 'dayjs';
+// import CustomDatePicker from '../components/CustomDatePicker';
 
 const Dashboard: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [dropdownVisible, setDropdownVisible] = useState<string | null>(null); // Track the visible dropdown
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [editingEntry, setEditingEntry] = useState<any | null>(null);
 
-  const showModal = () => {
-    setIsModalVisible(true);
+  const [budgetEntries, setBudgetEntries] = useState<any[]>([]);
+  const [filteredBudgetEntries, setFilteredBudgetEntries] = useState<any[]>([]);
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
+
+  const formRef = useRef<any>(null);
+
+  async function fetchBudgetEntries() {
+    try {
+      const req = await fetch('http://localhost:1337/api/budget-entries', {
+        headers: {
+          'x-access-token': localStorage.getItem('token') || '',
+        },
+      });
+
+      const data = await req.json();
+      if (data.status === 'ok') {
+        const formattedBudgetEntries = data.budgetEntries.map((entry: any) => ({
+          ...entry,
+          key: entry._id,
+          date: dayjs(entry.date).format('MM-DD-YYYY'),
+        }));
+        setBudgetEntries(formattedBudgetEntries);
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching budget entries:', error);
+    }
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log(token);
+    // console.log()
+    if (!token) {
+      navigate('/login', { replace: true });
+    } else {
+      setTimeout(() => {
+        setLoading(false);
+        fetchBudgetEntries();
+      }, 2000);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login', { replace: true });
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    formRef.current?.resetFields();
   };
 
-  const handleDropdownVisibleChange = (visible: boolean, recordKey: string) => {
-    setDropdownVisible(visible ? recordKey : null); // Show the dropdown for the clicked row
+  const handleDelete = async (recordKey: string) => {
+    console.log('Delete entry with key:', recordKey);
+    try {
+      const response = await fetch(
+        `http://localhost:1337/api/budget-entries/${recordKey}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'x-access-token': localStorage.getItem('token') || '',
+          },
+        },
+      );
+      const data = await response.json();
+      if (data.status === 'ok') {
+        console.log('Budget entry deleted:', data.message);
+
+        notification.destroy(recordKey);
+        notification.warning({
+          message: 'Buget Deleted!',
+        });
+
+        // Remove the deleted entry from the budgetEntries array
+        setBudgetEntries((prevEntries) =>
+          prevEntries.filter((entry) => entry.key !== recordKey),
+        );
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting budget entry:', error);
+      alert('An error occurred. Please try again later.');
+    }
   };
 
-  const handleDelete = () => {
-    console.log('delete');
+  const handleUpdate = (record: any) => {
+    console.log('Edit entry with key:', record.key);
+    setEditingEntry(record);
+    showModal();
   };
 
-  const handleUpdate = () => {
-    console.log('update');
+  const showModal = () => {
+    setIsModalVisible(true);
+    formRef.current?.resetFields();
+  };
+
+  const handleAddEntry = async (values: any) => {
+    console.log('Form values:', values);
+    try {
+      if (editingEntry) {
+        // Update existing entry
+        const response = await fetch(
+          `http://localhost:1337/api/budget-entries/${editingEntry.key}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-access-token': localStorage.getItem('token') || '',
+            },
+            body: JSON.stringify(values),
+          },
+        );
+        const data = await response.json();
+        if (data.status === 'ok') {
+          console.log('Budget entry updated:', data.message);
+          setIsModalVisible(false);
+          setEditingEntry(null);
+
+          // Update the budgetEntries array with the edited entry
+          setBudgetEntries((prevEntries) =>
+            prevEntries.map((entry) =>
+              entry.key === editingEntry.key
+                ? {
+                    ...entry,
+                    name: values.name,
+                    price: values.price,
+                    date: values.date,
+                  }
+                : entry,
+            ),
+          );
+          notification.success({
+            message: 'Budget Update Successfully',
+          });
+          fetchBudgetEntries();
+        } else {
+          alert(data.error);
+        }
+      } else {
+        // Add new entry
+        const response = await fetch(
+          'http://localhost:1337/api/budget-entries',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-access-token': localStorage.getItem('token') || '',
+            },
+            body: JSON.stringify(values),
+          },
+        );
+        const data = await response.json();
+        if (data.status === 'ok') {
+          console.log('Budget entry added:', data.message);
+
+          setIsModalVisible(false);
+
+          // Fetch updated budget entries and update the state
+          fetchBudgetEntries();
+
+          formRef.current?.resetFields();
+          notification.success({
+            message: 'Budget Created',
+          });
+        } else {
+          alert(data.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding/updating budget entry:', error);
+      alert('An error occurred. Please try again later.');
+    }
+  };
+
+  const handleFilterDateChange = (date: any) => {
+    setFilterDate(date);
+  };
+
+  const handleFilterButtonClick = () => {
+    if (!filterDate) {
+      setFilteredBudgetEntries([]);
+    } else {
+      const filteredEntries = budgetEntries.filter((entry) =>
+        dayjs(entry.date).isSame(dayjs(filterDate), 'day'),
+      );
+      setFilteredBudgetEntries(filteredEntries);
+    }
+  };
+
+  // Rest of the code remains the same
+
+  const actionsColumn = {
+    title: 'Action',
+    key: 'action',
+    render: (text: string, record: any) => (
+      <Space>
+        <Button
+          className="action-btn"
+          icon={<EditOutlined />}
+          onClick={() => handleUpdate(record)}
+        >
+          Edit
+        </Button>
+        <Button
+          className="action-btn"
+          icon={<DeleteOutlined />}
+          onClick={() => handleDelete(record.key)}
+        >
+          Delete
+        </Button>
+      </Space>
+    ),
   };
 
   const columns = [
@@ -64,151 +257,102 @@ const Dashboard: React.FC = () => {
       dataIndex: 'date',
       key: 'date',
     },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (text: string, record: BudgetEntry) => (
-        <Dropdown
-          placement="bottomLeft"
-          arrow
-          menu={{ items }}
-          trigger={['click']}
-          open={dropdownVisible === record.key} // Show the dropdown for this row's key
-          onOpenChange={(visible) =>
-            handleDropdownVisibleChange(visible, record.key)
-          }
-        >
-          <Button>
-            <img
-              src={require('../assets/three-dots-menu.png')}
-              alt="Menu"
-              style={{ width: '5px' }}
-            />
-          </Button>
-        </Dropdown>
-      ),
-    },
-  ];
-
-  const items: MenuProps['items'] = [
-    {
-      key: '1',
-      label: (
-        <Button
-          className="action-btn"
-          icon={<EditOutlined />}
-          block
-          onClick={handleUpdate}
-        >
-          Edit
-        </Button>
-      ),
-    },
-    {
-      key: '2',
-      label: (
-        <Button
-          className="action-btn"
-          icon={<DeleteOutlined />}
-          block
-          onClick={handleDelete}
-        >
-          Delete
-        </Button>
-      ),
-    },
-  ];
-
-  const data: BudgetEntry[] = [
-    {
-      key: '1',
-      name: 'Item 1',
-      price: '$100',
-      date: '2023-08-12',
-    },
-    {
-      key: '2',
-      name: 'Item 2',
-      price: '$50',
-      date: '2023-08-11',
-    },
-    {
-      key: '3',
-      name: 'Item 3',
-      price: '$75',
-      date: '2023-08-10',
-    },
-    {
-      key: '4',
-      name: 'Item 3',
-      price: '$75',
-      date: '2023-08-10',
-    },
-    {
-      key: '5',
-      name: 'Item 3',
-      price: '$75',
-      date: '2023-08-10',
-    },
-    {
-      key: '6',
-      name: 'Item 3',
-      price: '$75',
-      date: '2023-08-10',
-    },
+    actionsColumn,
   ];
 
   return (
-    <div className="dashboard-card">
-      <Card>
-        <Row justify="space-between" align="middle" className="row">
-          <Space>
-            <CustomDatePicker />
-            <Button size="large" type="primary" className="filter-btn" danger>
-              Filter by Date
+    <>
+      <div className="dashboard-card">
+        <Card>
+          <Row justify="space-between" align="middle" className="row">
+            <Space>
+              <DatePicker
+                value={filterDate ? dayjs(filterDate) : null}
+                onChange={handleFilterDateChange}
+                placeholder="Filter by Date"
+                size="large"
+              />
+              <Button
+                size="large"
+                type="primary"
+                className="filter-btn"
+                danger
+                onClick={handleFilterButtonClick}
+              >
+                Filter by Date
+              </Button>
+            </Space>
+            <Button
+              size="large"
+              type="primary"
+              className="addEntry-btn"
+              onClick={showModal}
+              danger
+            >
+              Add New Entry
             </Button>
-          </Space>
-          <Button
-            size="large"
-            type="primary"
-            className="addEntry-btn"
-            onClick={showModal}
-            danger
+          </Row>
+
+          <Modal
+            title="Add Budget"
+            open={isModalVisible}
+            onCancel={handleCancel}
+            footer={null}
           >
-            Add New Entry
-          </Button>
-        </Row>
+            <Form ref={formRef} onFinish={handleAddEntry}>
+              <Form.Item
+                name="date"
+                rules={[{ required: true, message: 'Date is required' }]}
+              >
+                {/* <CustomDatePicker /> */}
+                <DatePicker size="large" />
+              </Form.Item>
+              <Form.Item
+                name="name"
+                rules={[{ required: true, message: 'Name is required' }]}
+              >
+                <Input placeholder="Name" size="large" />
+              </Form.Item>
+              <Form.Item
+                name="price"
+                rules={[{ required: true, message: 'Price is required' }]}
+              >
+                <Input type="number" placeholder="Price" size="large" />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="addEntry-btn"
+                  block
+                >
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
 
-        <Modal
-          title="Add Budget"
-          open={isModalVisible}
-          onCancel={handleCancel}
-          footer={[
-            <Button key="submit" type="primary" className="addEntry-btn" block>
-              Submit
-            </Button>,
-          ]}
-        >
-          <Form>
-            <Form.Item>
-              <CustomDatePicker />
-            </Form.Item>
-            <Form.Item>
-              <Input placeholder="Name" size="large" />
-            </Form.Item>
-            <Form.Item>
-              <Input type="number" placeholder="Price" size="large" />
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={data.length > 5 ? { pageSize: 5 } : false}
-        />
-      </Card>
-    </div>
+          <Table
+            columns={columns}
+            dataSource={
+              filteredBudgetEntries.length > 0
+                ? filteredBudgetEntries
+                : filterDate !== null
+                ? []
+                : budgetEntries
+            }
+            pagination={budgetEntries.length > 6 ? { pageSize: 6 } : false}
+            loading={loading}
+            rowKey="key"
+          />
+        </Card>
+        <Card>
+          <div className="logout-btn">
+            <Button onClick={handleLogout}>Logout</Button>
+          </div>
+        </Card>
+      </div>
+    </>
   );
 };
 
