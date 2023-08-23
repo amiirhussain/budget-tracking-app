@@ -12,7 +12,6 @@ import {
 import { Card, Tabs } from 'antd';
 import { BudgetEntry } from '../types/Budget';
 import { fetchBudgetEntries } from '../utils/AnalyticsUtils';
-import '../styles/analytics.css';
 
 const { TabPane } = Tabs;
 
@@ -30,7 +29,6 @@ const Analytics: React.FC = () => {
       try {
         const filteredData = await fetchBudgetEntries(filter);
         setData(filteredData);
-        console.log(filteredData);
       } catch (error) {}
     }
 
@@ -46,8 +44,8 @@ const Analytics: React.FC = () => {
           <TabPane tab="Last 12 Months" key="12" />
         </Tabs>
         {data.length > 0 ? (
-          <ResponsiveContainer className="res-container">
-            <LineChart data={data} className="line-chart">
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />

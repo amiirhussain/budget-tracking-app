@@ -27,7 +27,6 @@ const Dashboard: React.FC = () => {
     filterDate,
     formRef,
     fetchBudgetEntries,
-    handleLogout,
     handleCancel,
     handleDelete,
     handleUpdate,
@@ -178,13 +177,6 @@ const Dashboard: React.FC = () => {
             loading={loading}
             rowKey="key"
           />
-        </Card>
-        <Card>
-          <div className="logout-btn">
-            <Button size="large" onClick={handleLogout}>
-              Logout
-            </Button>
-          </div>
         </Card>
       </div>
     </>

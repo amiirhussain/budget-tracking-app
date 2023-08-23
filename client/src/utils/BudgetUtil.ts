@@ -39,10 +39,6 @@ const useBudgetUtil = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-  };
-
   const handleCancel = () => {
     setIsModalVisible(false);
     setEditingEntry(null);
@@ -190,7 +186,6 @@ const useBudgetUtil = () => {
     setFilterDate,
     formRef,
     fetchBudgetEntries,
-    handleLogout,
     handleCancel,
     handleDelete,
     handleUpdate,
