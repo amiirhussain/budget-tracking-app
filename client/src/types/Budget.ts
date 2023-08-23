@@ -1,6 +1,6 @@
 export interface BudgetEntry {
   key: string;
   name: string;
-  price: string;
+  price: number;
   date: string;
 }

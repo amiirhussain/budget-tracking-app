@@ -24,22 +24,17 @@ const SignUp: React.FC = () => {
 
   return (
     <div className="form--container">
-      <Card style={{ width: 900 }}>
+      <Card className="card">
         <Row className="row">
           <Col>
             <img
               className="signup-image"
-              src={require('../assets/display-image.png')}
+              src="https://i.ibb.co/BcQH4CW/display-image.png"
               alt="Signup"
             />
           </Col>
           <Col className="form">
-            <Form
-              ref={formRef}
-              name="unique_form"
-              // onFinish={() => registerUser(formData)}
-              layout="vertical"
-            >
+            <Form ref={formRef} name="unique_form" layout="vertical">
               <Meta title={'Sign Up'} className="form-meta" />
               <p>
                 Already have an account?

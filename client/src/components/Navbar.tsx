@@ -3,7 +3,12 @@ import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles/navbar.css';
 import { useNavigate } from 'react-router-dom';
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  LogoutOutlined,
+  UserOutlined,
+  FundProjectionScreenOutlined,
+  HomeOutlined,
+} from '@ant-design/icons';
 import { MenuClickEventHandler } from 'rc-menu/lib/interface';
 
 const { SubMenu } = Menu;
@@ -18,12 +23,8 @@ const Navbar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove the token from local storage
+    localStorage.removeItem('token');
     navigate('/login', { replace: true });
-  };
-  const handleProfile = () => {
-    // localStorage.removeItem('token'); // Remove the token from local storage
-    navigate('/profile', { replace: true });
   };
 
   return (
@@ -36,7 +37,7 @@ const Navbar: React.FC = () => {
       <Menu.Item key="home" className="logo-container">
         <img
           className="logo-icon"
-          src={require('../assets/budget logo.png')}
+          src="https://i.ibb.co/LPP3ndL/budget-logo.png"
           alt="Logo"
         />
         <span className="logo-text">Budget Tracker</span>
@@ -54,17 +55,15 @@ const Navbar: React.FC = () => {
           </>
         ) : (
           <>
+            <Menu.Item key="dashboard" icon={<HomeOutlined />}>
+              <Link to="/dashboard">Dashboard</Link>
+            </Menu.Item>
+            <Menu.Item key="report" icon={<FundProjectionScreenOutlined />}>
+              <Link to="/report">Report</Link>
+            </Menu.Item>
             <Menu.Item key="logout" icon={<LogoutOutlined />}>
               <Link to="" onClick={handleLogout}>
                 Logout
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="dashboard" icon={<LogoutOutlined />}>
-              <Link to="/dashboard">Dashboard</Link>
-            </Menu.Item>
-            <Menu.Item key="report" icon={<UserOutlined />}>
-              <Link to="/report" onClick={handleProfile}>
-                Report
               </Link>
             </Menu.Item>
           </>

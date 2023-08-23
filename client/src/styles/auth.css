@@ -4,6 +4,9 @@
   align-content: center;
   justify-content: center;
 }
+.form--container .card {
+  width: 900px;
+}
 .signup-image {
   width: 420px;
   border-radius: 20px;

@@ -70,8 +70,6 @@ export const registerUser = async (
       body: JSON.stringify(formData),
     });
 
-    // console.log(formData);
-    // console.log(response);
     if (response.ok) {
       notification.success({
         message: 'Signup Success',

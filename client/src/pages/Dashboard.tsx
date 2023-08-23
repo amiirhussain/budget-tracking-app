@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
-// import jwtDecode from 'jwt-decode';
+import React, { useEffect } from 'react';
 import '../styles/dashboard.css';
 import { useNavigate } from 'react-router';
 import {
@@ -12,52 +11,37 @@ import {
   Row,
   Card,
   DatePicker,
-  notification,
 } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-// import CustomDatePicker from '../components/CustomDatePicker';
+import useBudgetUtil from '../utils/BudgetUtil';
 
 const Dashboard: React.FC = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const {
+    isModalVisible,
+    loading,
+    setLoading,
+    editingEntry,
+    budgetEntries,
+    filteredBudgetEntries,
+    filterDate,
+    formRef,
+    fetchBudgetEntries,
+    handleLogout,
+    handleCancel,
+    handleDelete,
+    handleUpdate,
+    showModal,
+    handleAddEntry,
+    handleFilterDateChange,
+    handleFilterButtonClick,
+  } = useBudgetUtil();
+
   const navigate = useNavigate();
-  const [editingEntry, setEditingEntry] = useState<any | null>(null);
-
-  const [budgetEntries, setBudgetEntries] = useState<any[]>([]);
-  const [filteredBudgetEntries, setFilteredBudgetEntries] = useState<any[]>([]);
-  const [filterDate, setFilterDate] = useState<Date | null>(null);
-
-  const formRef = useRef<any>(null);
-
-  async function fetchBudgetEntries() {
-    try {
-      const req = await fetch('http://localhost:1337/api/budget-entries', {
-        headers: {
-          'x-access-token': localStorage.getItem('token') || '',
-        },
-      });
-
-      const data = await req.json();
-      if (data.status === 'ok') {
-        const formattedBudgetEntries = data.budgetEntries.map((entry: any) => ({
-          ...entry,
-          key: entry._id,
-          date: dayjs(entry.date).format('MM-DD-YYYY'),
-        }));
-        setBudgetEntries(formattedBudgetEntries);
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching budget entries:', error);
-    }
-  }
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     console.log(token);
-    // console.log()
     if (!token) {
       navigate('/login', { replace: true });
     } else {
@@ -67,156 +51,6 @@ const Dashboard: React.FC = () => {
       }, 2000);
     }
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login', { replace: true });
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    formRef.current?.resetFields();
-  };
-
-  const handleDelete = async (recordKey: string) => {
-    console.log('Delete entry with key:', recordKey);
-    try {
-      const response = await fetch(
-        `http://localhost:1337/api/budget-entries/${recordKey}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'x-access-token': localStorage.getItem('token') || '',
-          },
-        },
-      );
-      const data = await response.json();
-      if (data.status === 'ok') {
-        console.log('Budget entry deleted:', data.message);
-
-        notification.destroy(recordKey);
-        notification.warning({
-          message: 'Buget Deleted!',
-        });
-
-        // Remove the deleted entry from the budgetEntries array
-        setBudgetEntries((prevEntries) =>
-          prevEntries.filter((entry) => entry.key !== recordKey),
-        );
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error('Error deleting budget entry:', error);
-      alert('An error occurred. Please try again later.');
-    }
-  };
-
-  const handleUpdate = (record: any) => {
-    console.log('Edit entry with key:', record.key);
-    setEditingEntry(record);
-    showModal();
-  };
-
-  const showModal = () => {
-    setIsModalVisible(true);
-    formRef.current?.resetFields();
-  };
-
-  const handleAddEntry = async (values: any) => {
-    console.log('Form values:', values);
-    try {
-      if (editingEntry) {
-        // Update existing entry
-        const response = await fetch(
-          `http://localhost:1337/api/budget-entries/${editingEntry.key}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-access-token': localStorage.getItem('token') || '',
-            },
-            body: JSON.stringify(values),
-          },
-        );
-        const data = await response.json();
-        if (data.status === 'ok') {
-          console.log('Budget entry updated:', data.message);
-          setIsModalVisible(false);
-          setEditingEntry(null);
-
-          // Update the budgetEntries array with the edited entry
-          setBudgetEntries((prevEntries) =>
-            prevEntries.map((entry) =>
-              entry.key === editingEntry.key
-                ? {
-                    ...entry,
-                    name: values.name,
-                    price: values.price,
-                    date: values.date,
-                  }
-                : entry,
-            ),
-          );
-          notification.success({
-            message: 'Budget Update Successfully',
-          });
-          fetchBudgetEntries();
-        } else {
-          alert(data.error);
-        }
-      } else {
-        // Add new entry
-        const response = await fetch(
-          'http://localhost:1337/api/budget-entries',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-access-token': localStorage.getItem('token') || '',
-            },
-            body: JSON.stringify(values),
-          },
-        );
-        const data = await response.json();
-        if (data.status === 'ok') {
-          console.log('Budget entry added:', data.message);
-
-          setIsModalVisible(false);
-
-          // Fetch updated budget entries and update the state
-          fetchBudgetEntries();
-
-          formRef.current?.resetFields();
-          notification.success({
-            message: 'Budget Created',
-          });
-        } else {
-          alert(data.error);
-        }
-      }
-    } catch (error) {
-      console.error('Error adding/updating budget entry:', error);
-      alert('An error occurred. Please try again later.');
-    }
-  };
-
-  const handleFilterDateChange = (date: any) => {
-    setFilterDate(date);
-  };
-
-  const handleFilterButtonClick = () => {
-    if (!filterDate) {
-      setFilteredBudgetEntries([]);
-    } else {
-      const filteredEntries = budgetEntries.filter((entry) =>
-        dayjs(entry.date).isSame(dayjs(filterDate), 'day'),
-      );
-      setFilteredBudgetEntries(filteredEntries);
-    }
-  };
-
-  // Rest of the code remains the same
 
   const actionsColumn = {
     title: 'Action',
@@ -294,7 +128,7 @@ const Dashboard: React.FC = () => {
           </Row>
 
           <Modal
-            title="Add Budget"
+            title={editingEntry ? 'Edit Budget' : 'Add Budget'}
             open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
@@ -304,7 +138,6 @@ const Dashboard: React.FC = () => {
                 name="date"
                 rules={[{ required: true, message: 'Date is required' }]}
               >
-                {/* <CustomDatePicker /> */}
                 <DatePicker size="large" />
               </Form.Item>
               <Form.Item
@@ -326,7 +159,7 @@ const Dashboard: React.FC = () => {
                   className="addEntry-btn"
                   block
                 >
-                  Submit
+                  {editingEntry ? 'Update' : 'Submit'}
                 </Button>
               </Form.Item>
             </Form>
@@ -348,7 +181,9 @@ const Dashboard: React.FC = () => {
         </Card>
         <Card>
           <div className="logout-btn">
-            <Button onClick={handleLogout}>Logout</Button>
+            <Button size="large" onClick={handleLogout}>
+              Logout
+            </Button>
           </div>
         </Card>
       </div>

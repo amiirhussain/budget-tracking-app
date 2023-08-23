@@ -8,8 +8,9 @@ body {
   background: #e2e8f0;
 }
 .container {
-  padding: 1rem 7%;
-  display: flex;
-  align-content: center;
-  justify-content: center;
+  padding: 2rem 10%;
+}
+.custom-btn {
+  background: #fcc315;
+  color: #fff;
 }

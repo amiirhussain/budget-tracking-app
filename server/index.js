@@ -153,23 +153,6 @@ app.delete('/api/budget-entries/:id', authenticateToken, async (req, res) => {
     // Find the entry by ID
     await BudgetEntry.findByIdAndRemove(entryId);
 
-    // if (!entry) {
-    //   return res
-    //     .status(404)
-    //     .json({ status: 'error', error: 'Entry not found' });
-    // }
-
-    // // Check if the user has access to delete the entry
-    // if (entry.user.toString() !== req.user._id) {
-    //   return res.status(403).json({
-    //     status: 'error',
-    //     error: 'Forbidden: You do not have permission to delete this entry',
-    //   });
-    // }
-
-    // Delete the entry
-    // await entry.remove();
-
     res.json({ status: 'ok', message: 'Budget entry deleted.' });
   } catch (err) {
     console.error('Error deleting budget entry:', err);
@@ -179,45 +162,45 @@ app.delete('/api/budget-entries/:id', authenticateToken, async (req, res) => {
 
 // user budget limit
 
-app.get('/api/budget-trend/:period', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.user.email });
-    if (!user) {
-      return res.status(404).json({ status: 'error', error: 'User not found' });
-    }
+// app.get('/api/budget-trend/:period', authenticateToken, async (req, res) => {
+//   try {
+//     const user = await User.findOne({ email: req.user.email });
+//     if (!user) {
+//       return res.status(404).json({ status: 'error', error: 'User not found' });
+//     }
 
-    const period = req.params.period;
-    let startDate = new Date();
+//     const period = req.params.period;
+//     let startDate = new Date();
 
-    switch (period) {
-      case '1month':
-        startDate.setMonth(startDate.getMonth() - 1);
-        break;
-      case '6months':
-        startDate.setMonth(startDate.getMonth() - 6);
-        break;
-      case '12months':
-        startDate.setMonth(startDate.getMonth() - 12);
-        break;
-      default:
-        return res
-          .status(400)
-          .json({ status: 'error', error: 'Invalid period' });
-    }
+//     switch (period) {
+//       case '1month':
+//         startDate.setMonth(startDate.getMonth() - 1);
+//         break;
+//       case '6months':
+//         startDate.setMonth(startDate.getMonth() - 6);
+//         break;
+//       case '12months':
+//         startDate.setMonth(startDate.getMonth() - 12);
+//         break;
+//       default:
+//         return res
+//           .status(400)
+//           .json({ status: 'error', error: 'Invalid period' });
+//     }
 
-    const budgetEntries = await BudgetEntry.find({
-      user: user._id,
-      date: { $gte: startDate },
-    }).sort({ date: 1 });
+//     const budgetEntries = await BudgetEntry.find({
+//       user: user._id,
+//       date: { $gte: startDate },
+//     }).sort({ date: 1 });
 
-    // Process the data to group by month and calculate total expenses...
+//     // Process the data to group by month and calculate total expenses...
 
-    return res.json({ status: 'ok', trendData: budgetEntries });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: 'error', error: 'An error occurred' });
-  }
-});
+//     return res.json({ status: 'ok', trendData: budgetEntries });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ status: 'error', error: 'An error occurred' });
+//   }
+// });
 
 app.listen(1337, () => {
   console.log('Server started on port 1337');
