@@ -1,14 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { userRouter } = require('./routes/user');
+const { budgetRouter } = require('./routes/budget');
 
-const registerUser = require('./handlers/registerUser');
-const loginUser = require('./handlers/loginUser');
-const createBudgetEntry = require('./handlers/createBudgetEntry');
-const fetchBudgetEntries = require('./handlers/fetchBudgetEntries');
-const editBudgetEntry = require('./handlers/editBudgetEntry');
-const deleteBudgetEntry = require('./handlers/deleteBudgetEntry');
-const authenticateToken = require('./middlewares/authenticateToken');
+const router = express.Router();
 
 const app = express();
 const PORT = 1337;
@@ -24,12 +20,9 @@ mongoose
   .catch((error) => console.error('Failed to connect to MongoDB:', error));
 
 // Routes
-app.post('/api/register', registerUser);
-app.post('/api/login', loginUser);
-app.post('/api/budget-entries', authenticateToken, createBudgetEntry);
-app.get('/api/budget-entries', authenticateToken, fetchBudgetEntries);
-app.put('/api/budget-entries/:id', authenticateToken, editBudgetEntry);
-app.delete('/api/budget-entries/:id', authenticateToken, deleteBudgetEntry);
+app.use(router);
+router.use('/api/user', userRouter);
+router.use('/api/budget-entries', budgetRouter);
 
 // Centralized Error Handling
 app.use((err, req, res, next) => {

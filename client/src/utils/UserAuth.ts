@@ -4,7 +4,7 @@ import { FormInstance } from 'antd/lib/form';
 
 export const loginUser = async (formData: FormData) => {
   try {
-    const response = await fetch('http://localhost:1337/api/login', {
+    const response = await fetch('http://localhost:1337/api/user/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export const registerUser = async (
   }
 
   try {
-    const response = await fetch('http://localhost:1337/api/register', {
+    const response = await fetch('http://localhost:1337/api/users/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
-# Budget Management App
+# Budget Tracking App
 
-Welcome to the Budget Management App, a MERN stack application for managing your finances and expenses.
+Welcome to the Budget Tracking App, a MERN stack application for managing your finances and expenses.
 
 ## Features
 

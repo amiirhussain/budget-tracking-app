@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'secret123';
 
-module.exports = (req, res, next) => {
+exports.authenticateToken = (req, res, next) => {
   const token = req.headers['x-access-token'];
   if (!token) {
     return res.status(401).json({ status: 'error', error: 'Unauthorized' });
