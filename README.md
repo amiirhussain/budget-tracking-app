@@ -30,13 +30,25 @@ Welcome to the Budget Management App, a MERN stack application for managing your
 
 4. Set up the backend server (Refer to the server folder for instructions).
 
-5. Start the development server:
+5. Navigate to the server folder:
 
    ```sh
-   npm start
+   cd server
    ```
 
-6. Open `http://localhost:3000` in your browser.
+6. Install dependencies:
+
+   ```sh
+    npm install
+   ```
+
+7. Start the development server:
+
+   ```sh
+   npm run dev
+   ```
+
+8. Open `http://localhost:3000` in your browser.
 
 ## Usage
 
