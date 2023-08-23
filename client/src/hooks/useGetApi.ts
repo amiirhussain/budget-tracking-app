@@ -1,5 +1,3 @@
-// hooks/api.ts
-
 const API_BASE_URL = 'http://localhost:1337/api/budget-entries';
 
 export const fetchBudgetEntriesAPI = async (token: string) => {
