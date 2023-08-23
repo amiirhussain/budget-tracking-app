@@ -3,6 +3,12 @@ import dayjs from 'dayjs';
 import { notification } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { BudgetEntry } from '../types/Budget';
+import {
+  fetchBudgetEntriesAPI,
+  deleteBudgetEntryAPI,
+  updateBudgetEntryAPI,
+  createBudgetEntryAPI,
+} from '../hooks/useGetApi';
 
 const useBudgetUtil = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -16,26 +22,17 @@ const useBudgetUtil = () => {
   const formRef = useRef<FormInstance | null>(null);
 
   const fetchBudgetEntries = async () => {
-    try {
-      const req = await fetch('http://localhost:1337/api/budget-entries', {
-        headers: {
-          'x-access-token': localStorage.getItem('token') || '',
-        },
-      });
-
-      const data = await req.json();
-      if (data.status === 'ok') {
-        const formattedBudgetEntries = data.budgetEntries.map((entry: any) => ({
-          ...entry,
-          key: entry._id,
-          date: dayjs(entry.date).format('MM-DD-YYYY'),
-        }));
-        setBudgetEntries(formattedBudgetEntries);
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching budget entries:', error);
+    const token = localStorage.getItem('token') || '';
+    const data = await fetchBudgetEntriesAPI(token);
+    if (data.status === 'ok') {
+      const formattedBudgetEntries = data.budgetEntries.map((entry: any) => ({
+        ...entry,
+        key: entry._id,
+        date: dayjs(entry.date).format('MM-DD-YYYY'),
+      }));
+      setBudgetEntries(formattedBudgetEntries);
+    } else {
+      alert(data.error);
     }
   };
 
@@ -46,31 +43,16 @@ const useBudgetUtil = () => {
   };
 
   const handleDelete = async (recordKey: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:1337/api/budget-entries/${recordKey}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'x-access-token': localStorage.getItem('token') || '',
-          },
-        },
+    const token = localStorage.getItem('token') || '';
+    const data = await deleteBudgetEntryAPI(recordKey, token);
+    if (data.status === 'ok') {
+      notification.destroy(recordKey);
+      notification.warning({ message: 'Budget Deleted!' });
+      setBudgetEntries((prevEntries) =>
+        prevEntries.filter((entry) => entry.key !== recordKey),
       );
-      const data = await response.json();
-      if (data.status === 'ok') {
-        notification.destroy(recordKey);
-        notification.warning({
-          message: 'Buget Deleted!',
-        });
-        setBudgetEntries((prevEntries) =>
-          prevEntries.filter((entry) => entry.key !== recordKey),
-        );
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error('Error deleting budget entry:', error);
-      alert('An error occurred. Please try again later.');
+    } else {
+      alert(data.error);
     }
   };
 
@@ -81,78 +63,43 @@ const useBudgetUtil = () => {
       price: record.price,
       date: dayjs(record.date, 'MM-DD-YYYY'),
     });
-    showModal();
-  };
-
-  const showModal = () => {
     setIsModalVisible(true);
-    formRef.current?.resetFields();
   };
 
   const handleAddEntry = async (values: any) => {
-    try {
-      if (editingEntry) {
-        const response = await fetch(
-          `http://localhost:1337/api/budget-entries/${editingEntry.key}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-access-token': localStorage.getItem('token') || '',
-            },
-            body: JSON.stringify(values),
-          },
+    const token = localStorage.getItem('token') || '';
+    if (editingEntry) {
+      const data = await updateBudgetEntryAPI(editingEntry.key, values, token);
+      if (data.status === 'ok') {
+        setIsModalVisible(false);
+        setEditingEntry(null);
+        setBudgetEntries((prevEntries) =>
+          prevEntries.map((entry) =>
+            entry.key === editingEntry.key
+              ? {
+                  ...entry,
+                  name: values.name,
+                  price: values.price,
+                  date: values.date,
+                }
+              : entry,
+          ),
         );
-        const data = await response.json();
-        if (data.status === 'ok') {
-          setIsModalVisible(false);
-          setEditingEntry(null);
-          setBudgetEntries((prevEntries) =>
-            prevEntries.map((entry) =>
-              entry.key === editingEntry.key
-                ? {
-                    ...entry,
-                    name: values.name,
-                    price: values.price,
-                    date: values.date,
-                  }
-                : entry,
-            ),
-          );
-          notification.success({
-            message: 'Budget Update Successfully',
-          });
-          fetchBudgetEntries();
-        } else {
-          alert(data.error);
-        }
+        notification.success({ message: 'Budget Updated Successfully' });
+        fetchBudgetEntries();
       } else {
-        const response = await fetch(
-          'http://localhost:1337/api/budget-entries',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-access-token': localStorage.getItem('token') || '',
-            },
-            body: JSON.stringify(values),
-          },
-        );
-        const data = await response.json();
-        if (data.status === 'ok') {
-          setIsModalVisible(false);
-          fetchBudgetEntries();
-          formRef.current?.resetFields();
-          notification.success({
-            message: 'Budget Created',
-          });
-        } else {
-          alert(data.error);
-        }
+        alert(data.error);
       }
-    } catch (error) {
-      console.error('Error adding/updating budget entry:', error);
-      alert('An error occurred. Please try again later.');
+    } else {
+      const data = await createBudgetEntryAPI(values, token);
+      if (data.status === 'ok') {
+        setIsModalVisible(false);
+        fetchBudgetEntries();
+        formRef.current?.resetFields();
+        notification.success({ message: 'Budget Created' });
+      } else {
+        alert(data.error);
+      }
     }
   };
 
@@ -171,6 +118,11 @@ const useBudgetUtil = () => {
     }
   };
 
+  const showModal = () => {
+    setIsModalVisible(true);
+    formRef.current?.resetFields();
+  };
+
   return {
     isModalVisible,
     setIsModalVisible,
@@ -185,11 +137,11 @@ const useBudgetUtil = () => {
     filterDate,
     setFilterDate,
     formRef,
+    showModal,
     fetchBudgetEntries,
     handleCancel,
     handleDelete,
     handleUpdate,
-    showModal,
     handleAddEntry,
     handleFilterDateChange,
     handleFilterButtonClick,
