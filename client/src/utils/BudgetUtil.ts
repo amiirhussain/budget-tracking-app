@@ -8,7 +8,7 @@ import {
   deleteBudgetEntryAPI,
   updateBudgetEntryAPI,
   createBudgetEntryAPI,
-} from '../hooks/useGetApi';
+} from '../hooks/useApi';
 
 const useBudgetUtil = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
